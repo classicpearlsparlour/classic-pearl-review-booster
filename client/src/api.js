@@ -1,4 +1,16 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const localApiUrl = 'http://localhost:4000';
+const productionApiUrl = 'https://classic-pearl-review-booster-api.onrender.com';
+
+function getApiUrl() {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1' ? localApiUrl : productionApiUrl;
+}
+
+const API_URL = getApiUrl();
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
