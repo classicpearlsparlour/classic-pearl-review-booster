@@ -18,7 +18,13 @@ app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'qr-ai-review-booster-api' });
+  res.json({
+    ok: true,
+    service: 'qr-ai-review-booster-api',
+    dataMode: process.env.DATA_MODE || 'mongodb',
+    supabaseConfigured: Boolean(process.env.SUPABASE_URL),
+    supabaseKeyConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY)
+  });
 });
 
 app.use('/api/businesses', businessRoutes);
