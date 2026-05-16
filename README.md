@@ -94,8 +94,8 @@ Set these on Render/Railway:
 NODE_ENV=production
 DATA_MODE=supabase
 PORT=10000
-CLIENT_ORIGIN=https://your-frontend-domain.vercel.app
-PUBLIC_APP_URL=https://your-frontend-domain.vercel.app
+CLIENT_ORIGIN=https://classic-pearl-review-booster-client.vercel.app
+PUBLIC_APP_URL=https://classic-pearl-review-booster-client.vercel.app
 SUPABASE_URL=https://your-project-ref.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 OPENAI_API_KEY=
@@ -106,7 +106,7 @@ OPENAI_COMPATIBLE_MODEL=llama-3.1-8b-instant
 
 `CLIENT_ORIGIN` controls which frontend can call the API.
 
-`PUBLIC_APP_URL` controls the URL encoded inside generated QR codes.
+`PUBLIC_APP_URL` controls the URL encoded inside generated QR codes. If Render still has the temporary value, production code falls back to `https://classic-pearl-review-booster-client.vercel.app`.
 
 For Supabase, run [supabase/schema.sql](supabase/schema.sql) in the Supabase SQL Editor first. Use the service role key only in the backend host, never in frontend Vercel variables.
 

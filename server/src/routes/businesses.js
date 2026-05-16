@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Business } from '../data/index.js';
 import { createBusinessQrDataUrl } from '../services/qr.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import { getPublicAppUrl } from '../config/publicUrls.js';
 
 const router = Router();
 
@@ -55,7 +56,7 @@ router.get(
 
     const qrDataUrl = await createBusinessQrDataUrl(business.id);
     res.json({
-      scanUrl: `${process.env.PUBLIC_APP_URL || 'http://localhost:5173'}/r/${business.id}`,
+      scanUrl: `${getPublicAppUrl()}/r/${business.id}`,
       qrDataUrl
     });
   })

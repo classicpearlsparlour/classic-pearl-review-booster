@@ -1,7 +1,8 @@
 import QRCode from 'qrcode';
+import { getPublicAppUrl } from '../config/publicUrls.js';
 
 export async function createBusinessQrDataUrl(businessId) {
-  const appUrl = process.env.PUBLIC_APP_URL || 'http://localhost:5173';
+  const appUrl = getPublicAppUrl();
   const scanUrl = `${appUrl}/r/${businessId}`;
   return QRCode.toDataURL(scanUrl, {
     errorCorrectionLevel: 'M',

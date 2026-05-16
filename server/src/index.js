@@ -8,13 +8,11 @@ import scanRoutes from './routes/scans.js';
 import reviewRoutes from './routes/reviews.js';
 import complaintRoutes from './routes/complaints.js';
 import analyticsRoutes from './routes/analytics.js';
+import { getAllowedOrigins } from './config/publicUrls.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
-const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = getAllowedOrigins();
 
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: '1mb' }));
