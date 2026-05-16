@@ -217,7 +217,8 @@ function AdminApp() {
 
 function CustomerReviewPage({ businessId }) {
   const [business, setBusiness] = useState(null);
-  const [serviceId, setServiceId] = useState('');
+  const [selectedServiceIds, setSelectedServiceIds] = useState([]);
+  const [flowStep, setFlowStep] = useState('services');
   const [experience, setExperience] = useState('');
   const [feedback, setFeedback] = useState('');
   const [options, setOptions] = useState([]);
@@ -227,14 +228,18 @@ function CustomerReviewPage({ businessId }) {
   const [message, setMessage] = useState('');
   const [loadFailed, setLoadFailed] = useState(false);
 
-  const service = useMemo(() => business?.services.find((item) => item._id === serviceId), [business, serviceId]);
+  const popularServices = useMemo(() => getPopularServices(business?.services || []), [business]);
+  const selectedServices = useMemo(
+    () => business?.services.filter((item) => selectedServiceIds.includes(item._id)) || [],
+    [business, selectedServiceIds]
+  );
 
   useEffect(() => {
     api
       .getBusiness(businessId)
       .then((data) => {
         setBusiness(data);
-        setServiceId(data.services[0]?._id || '');
+        setSelectedServiceIds([]);
         return api.trackScan(businessId);
       })
       .catch((error) => {
@@ -244,6 +249,12 @@ function CustomerReviewPage({ businessId }) {
   }, [businessId]);
 
   async function generateOptions(nextExperience) {
+    if (!selectedServiceIds.length) {
+      setMessage('Please select at least one service first.');
+      setFlowStep('services');
+      return;
+    }
+
     setExperience(nextExperience);
     setOptions([]);
     setSelectedReview('');
@@ -255,9 +266,10 @@ function CustomerReviewPage({ businessId }) {
     try {
       const result = await api.getSuggestions({
         businessId,
-        serviceId,
+        serviceIds: selectedServiceIds,
         experience: nextExperience,
-        feedback
+        feedback,
+        refreshToken: Date.now()
       });
       setOptions(result.options);
       setSelectedReview(result.options[0]);
@@ -269,14 +281,37 @@ function CustomerReviewPage({ businessId }) {
   }
 
   async function postOnGoogle() {
-    const result = await api.trackGoogleClick({ businessId, serviceId, selectedReview });
+    const result = await api.trackGoogleClick({ businessId, serviceIds: selectedServiceIds, selectedReview });
     window.open(result.googleReviewLink, '_blank', 'noopener,noreferrer');
   }
 
   async function submitComplaint(event) {
     event.preventDefault();
-    await api.createComplaint({ businessId, serviceId, feedback });
+    await api.createComplaint({
+      businessId,
+      serviceId: selectedServiceIds[0],
+      feedback: `${feedback}\n\nSelected services: ${selectedServices.map((item) => item.name).join(', ')}`
+    });
     setComplaintSent(true);
+  }
+
+  function toggleService(serviceId) {
+    setMessage('');
+    setOptions([]);
+    setSelectedReview('');
+    setSelectedServiceIds((current) =>
+      current.includes(serviceId) ? current.filter((id) => id !== serviceId) : [...current, serviceId]
+    );
+  }
+
+  function goToExperience() {
+    if (!selectedServiceIds.length) {
+      setMessage('Please select at least one service.');
+      return;
+    }
+
+    setMessage('');
+    setFlowStep('experience');
   }
 
   if (!business) {
@@ -306,22 +341,40 @@ function CustomerReviewPage({ businessId }) {
 
         {message && <div className="notice">{message}</div>}
 
-        <div className="flow-block">
-          <label>
-            Service used
-            <select value={serviceId} onChange={(event) => setServiceId(event.target.value)}>
-              {business.services.map((item) => (
-                <option key={item._id} value={item._id}>{item.name}</option>
+        {flowStep === 'services' && (
+          <section className="service-picker">
+            <PanelTitle icon={<Sparkles />} title="Select Services Used" />
+            <div className="service-chip-grid">
+              {popularServices.map((item) => (
+                <button
+                  type="button"
+                  key={item._id}
+                  className={selectedServiceIds.includes(item._id) ? 'service-chip selected' : 'service-chip'}
+                  onClick={() => toggleService(item._id)}
+                >
+                  {item.name}
+                </button>
               ))}
-            </select>
-          </label>
-        </div>
+            </div>
+            <p className="policy-note">Choose one or more services you actually used today.</p>
+            <button className="primary-button" onClick={goToExperience}>Next</button>
+          </section>
+        )}
 
-        <div className="experience-grid">
-          <button className={experience === 'loved' ? 'selected' : ''} onClick={() => generateOptions('loved')}>Loved it</button>
-          <button className={experience === 'good' ? 'selected' : ''} onClick={() => generateOptions('good')}>Good</button>
-          <button className={experience === 'not_happy' ? 'selected danger' : 'danger'} onClick={() => generateOptions('not_happy')}>Not happy</button>
-        </div>
+        {flowStep === 'experience' && (
+          <>
+            <div className="selected-services">
+              <span><strong>Selected:</strong> {selectedServices.map((item) => item.name).join(', ')}</span>
+              <button type="button" onClick={() => setFlowStep('services')}>Change</button>
+            </div>
+
+            <div className="experience-grid">
+              <button className={experience === 'loved' ? 'selected' : ''} onClick={() => generateOptions('loved')}>Loved it</button>
+              <button className={experience === 'good' ? 'selected' : ''} onClick={() => generateOptions('good')}>Good</button>
+              <button className={experience === 'not_happy' ? 'selected danger' : 'danger'} onClick={() => generateOptions('not_happy')}>Not happy</button>
+            </div>
+          </>
+        )}
 
         {loading && <p className="subtle">Creating review options...</p>}
 
@@ -395,4 +448,25 @@ function Metric({ label, value }) {
       <strong>{value}</strong>
     </div>
   );
+}
+
+function getPopularServices(services) {
+  const popularNames = [
+    'Women Haircut',
+    'Men Haircut',
+    'Hair Color',
+    'Hair Spa',
+    'Keratin Treatment',
+    'Facial',
+    'Clean Up',
+    'Threading',
+    'Waxing',
+    'Manicure',
+    'Pedicure',
+    'Party Makeover',
+    'Bridal Facial'
+  ];
+  const byName = new Map(services.map((service) => [service.name, service]));
+  const popular = popularNames.map((name) => byName.get(name)).filter(Boolean);
+  return popular.length ? popular : services.slice(0, 10);
 }

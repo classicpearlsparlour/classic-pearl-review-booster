@@ -5,7 +5,10 @@ const positiveTone = {
   good: 'positive'
 };
 
-export async function generateReviewSuggestions({ business, service, experience, feedback }) {
+export async function generateReviewSuggestions({ business, service, services, experience, feedback }) {
+  const selectedServices = services?.length ? services : [service].filter(Boolean);
+  const reviewService = combineServices(selectedServices);
+
   if (!['loved', 'good'].includes(experience)) {
     const error = new Error('Review suggestions are only available for positive experiences');
     error.statusCode = 400;
@@ -13,17 +16,17 @@ export async function generateReviewSuggestions({ business, service, experience,
   }
 
   if (process.env.OPENAI_API_KEY) {
-    return generateWithOpenAI({ business, service, experience, feedback });
+    return generateWithOpenAI({ business, service: reviewService, services: selectedServices, experience, feedback });
   }
 
   if (process.env.OPENAI_COMPATIBLE_API_KEY && process.env.OPENAI_COMPATIBLE_BASE_URL) {
-    return generateWithOpenCompatibleModel({ business, service, experience, feedback });
+    return generateWithOpenCompatibleModel({ business, service: reviewService, services: selectedServices, experience, feedback });
   }
 
-  return generateFallbackSuggestions({ business, service, experience, feedback });
+  return generateFallbackSuggestions({ business, service: reviewService, services: selectedServices, experience, feedback });
 }
 
-async function generateWithOpenCompatibleModel({ business, service, experience, feedback }) {
+async function generateWithOpenCompatibleModel({ business, service, services, experience, feedback }) {
   const keyword = service.keywords?.[0] || service.name;
   const baseUrl = process.env.OPENAI_COMPATIBLE_BASE_URL.replace(/\/$/, '');
   const model = process.env.OPENAI_COMPATIBLE_MODEL || 'llama-3.1-8b-instant';
@@ -56,7 +59,7 @@ async function generateWithOpenCompatibleModel({ business, service, experience, 
             businessName: business.name,
             category: business.category,
             location: business.location,
-            serviceUsed: service.name,
+            servicesUsed: services.map((item) => item.name),
             naturalKeyword: keyword,
             experienceTone: positiveTone[experience],
             optionalCustomerFeedback: feedback || ''
@@ -75,7 +78,7 @@ async function generateWithOpenCompatibleModel({ business, service, experience, 
   return normalizeOptions(parsed.options, { business, service, feedback });
 }
 
-async function generateWithOpenAI({ business, service, experience, feedback }) {
+async function generateWithOpenAI({ business, service, services, experience, feedback }) {
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const keyword = service.keywords?.[0] || service.name;
 
@@ -100,7 +103,7 @@ async function generateWithOpenAI({ business, service, experience, feedback }) {
           businessName: business.name,
           category: business.category,
           location: business.location,
-          serviceUsed: service.name,
+          servicesUsed: services.map((item) => item.name),
           naturalKeyword: keyword,
           experienceTone: positiveTone[experience],
           optionalCustomerFeedback: feedback || ''
@@ -114,8 +117,8 @@ async function generateWithOpenAI({ business, service, experience, feedback }) {
   return normalizeOptions(parsed.options, { business, service, feedback });
 }
 
-function generateFallbackSuggestions({ business, service, experience, feedback }) {
-  const context = buildReviewContext({ business, service });
+function generateFallbackSuggestions({ business, service, services, experience, feedback }) {
+  const context = buildReviewContext({ business, service, services });
   const templates = experience === 'loved' ? lovedTemplates : goodTemplates;
   const shuffledTemplates = shuffle(templates);
   const options = [];
@@ -129,9 +132,9 @@ function generateFallbackSuggestions({ business, service, experience, feedback }
   return normalizeOptions(options, { business, service, feedback });
 }
 
-function buildReviewContext({ business, service }) {
+function buildReviewContext({ business, service, services }) {
   const keyword = sample(service.keywords?.filter(Boolean)) || service.name;
-  const serviceName = service.name.toLowerCase();
+  const serviceName = humanList(services.map((item) => item.name.toLowerCase()));
   const businessName = business.name;
   const location = business.location;
   const maybeLocation = location && Math.random() > 0.55 ? ` in ${location}` : '';
@@ -145,7 +148,8 @@ function buildReviewContext({ business, service }) {
     servicePhrase: sample([
       keyword,
       service.name,
-      `${serviceName} service`
+      `${serviceName} service`,
+      humanList(services.map((item) => item.name))
     ]),
     smoothPhrase: sample([
       'smooth',
@@ -213,6 +217,27 @@ function normalizeOptions(options, { business, service }) {
   }
 
   return cleaned.slice(0, 3);
+}
+
+function combineServices(services) {
+  const names = services.map((service) => service.name);
+  const keywords = services
+    .flatMap((service) => service.keywords?.filter(Boolean) || [service.name])
+    .slice(0, 6);
+
+  return {
+    id: services.map((service) => service.id || service._id).join(','),
+    _id: services.map((service) => service.id || service._id).join(','),
+    name: humanList(names),
+    keywords
+  };
+}
+
+function humanList(items) {
+  const values = items.filter(Boolean);
+  if (values.length <= 1) return values[0] || '';
+  if (values.length === 2) return `${values[0]} and ${values[1]}`;
+  return `${values.slice(0, -1).join(', ')} and ${values[values.length - 1]}`;
 }
 
 function trimSentence(value) {

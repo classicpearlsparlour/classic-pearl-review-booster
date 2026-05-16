@@ -281,6 +281,59 @@ textarea {
   gap: 14px;
 }
 
+.service-picker {
+  display: grid;
+  gap: 13px;
+}
+
+.service-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.service-chip {
+  min-height: 44px;
+  border: 1px solid #cfd8d2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #17201b;
+  padding: 10px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-align: left;
+}
+
+.service-chip.selected {
+  border-color: #236b54;
+  background: #eaf8ef;
+  color: #1f5d48;
+}
+
+.selected-services {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #dce3dd;
+  border-radius: 8px;
+  background: #fbfcfa;
+  padding: 10px 12px;
+  color: #415049;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.selected-services button {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: #236b54;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .experience-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -369,6 +422,10 @@ textarea {
   }
 
   .experience-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-chip-grid {
     grid-template-columns: 1fr;
   }
 }

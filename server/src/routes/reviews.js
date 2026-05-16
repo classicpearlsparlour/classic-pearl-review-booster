@@ -8,7 +8,8 @@ const router = Router();
 
 const suggestionSchema = z.object({
   businessId: z.string().min(1),
-  serviceId: z.string().min(1),
+  serviceId: z.string().min(1).optional(),
+  serviceIds: z.array(z.string().min(1)).min(1).optional(),
   experience: z.enum(['loved', 'good']),
   feedback: z.string().max(500).optional().default('')
 });
@@ -16,6 +17,7 @@ const suggestionSchema = z.object({
 const clickSchema = z.object({
   businessId: z.string().min(1),
   serviceId: z.string().min(1).optional(),
+  serviceIds: z.array(z.string().min(1)).optional(),
   selectedReview: z.string().max(1000).optional()
 });
 
@@ -26,12 +28,13 @@ router.post(
     const business = await Business.findById(payload.businessId);
     if (!business) return res.status(404).json({ message: 'Business not found' });
 
-    const service = business.services.id(payload.serviceId);
-    if (!service) return res.status(404).json({ message: 'Service not found' });
+    const requestedServiceIds = payload.serviceIds?.length ? payload.serviceIds : [payload.serviceId].filter(Boolean);
+    const services = requestedServiceIds.map((serviceId) => business.services.id(serviceId)).filter(Boolean);
+    if (!services.length) return res.status(404).json({ message: 'Service not found' });
 
     const options = await generateReviewSuggestions({
       business,
-      service,
+      services,
       experience: payload.experience,
       feedback: payload.feedback
     });
@@ -39,7 +42,7 @@ router.post(
     await Event.create({
       businessId: business.id,
       type: 'review_options_view',
-      metadata: { serviceId: service.id, experience: payload.experience }
+      metadata: { serviceIds: services.map((service) => service.id), experience: payload.experience }
     });
 
     res.json({ options });
@@ -58,6 +61,7 @@ router.post(
       type: 'google_click',
       metadata: {
         serviceId: payload.serviceId,
+        serviceIds: payload.serviceIds || [],
         selectedReviewLength: payload.selectedReview?.length || 0
       }
     });
