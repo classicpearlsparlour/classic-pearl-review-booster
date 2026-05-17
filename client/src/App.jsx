@@ -384,7 +384,7 @@ function CustomerReviewPage({ businessId }) {
                     aria-label={`${star} star rating`}
                     onClick={() => handleRating(star)}
                   >
-                    ★
+                    &#9733;
                   </button>
                 ))}
               </div>
@@ -420,7 +420,7 @@ function CustomerReviewPage({ businessId }) {
 
         {experience === 'not_happy' && !complaintSent && (
           <form className="feedback-form" onSubmit={submitComplaint}>
-            <h2>We’re sorry about your experience.</h2>
+            <h2>We're sorry about your experience.</h2>
             <p className="subtle">Please tell us what went wrong so we can improve.</p>
             <textarea
               value={feedback}
