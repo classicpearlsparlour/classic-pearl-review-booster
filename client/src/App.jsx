@@ -285,6 +285,10 @@ function CustomerReviewPage({ businessId }) {
 
   async function postOnGoogle() {
     const result = await api.trackGoogleClick({ businessId, serviceIds: selectedServiceIds, selectedReview });
+    if (selectedReview && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(selectedReview).catch(() => {});
+      setMessage('Review copied. Paste it into Google after it opens.');
+    }
     window.open(result.googleReviewLink, '_blank', 'noopener,noreferrer');
   }
 
@@ -340,15 +344,20 @@ function CustomerReviewPage({ businessId }) {
   return (
     <main className="customer-shell">
       <section className="mobile-card">
-        <p className="eyebrow">{business.category}</p>
-        <h1>{business.name}</h1>
-        <p className="subtle">{business.location}</p>
+        <div className="google-style-header">
+          <div className="google-mark" aria-hidden="true">G</div>
+          <div>
+            <p className="eyebrow">{business.category}</p>
+            <h1>{business.name}</h1>
+            <p className="subtle">{business.location}</p>
+          </div>
+        </div>
 
         {message && <div className="notice">{message}</div>}
 
         {flowStep === 'services' && (
           <section className="service-picker">
-            <PanelTitle icon={<Sparkles />} title="Select Services Used" />
+            <PanelTitle icon={<Sparkles />} title="What did you visit for?" />
             <div className="service-chip-grid">
               {popularServices.map((item) => (
                 <button
@@ -361,7 +370,6 @@ function CustomerReviewPage({ businessId }) {
                 </button>
               ))}
             </div>
-            <p className="policy-note">Choose one or more services you actually used today.</p>
             <button className="primary-button" onClick={goToExperience}>Next</button>
           </section>
         )}
@@ -374,7 +382,7 @@ function CustomerReviewPage({ businessId }) {
             </div>
 
             <section className="rating-panel">
-              <PanelTitle icon={<Sparkles />} title="Rate Your Visit" />
+              <PanelTitle icon={<Sparkles />} title="How was your experience?" />
               <div className="star-rating" aria-label="Rate your salon experience">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -388,7 +396,6 @@ function CustomerReviewPage({ businessId }) {
                   </button>
                 ))}
               </div>
-              <p className="policy-note">4 or 5 stars will create review drafts. 1 to 3 stars will open private feedback.</p>
             </section>
           </>
         )}
@@ -397,7 +404,7 @@ function CustomerReviewPage({ businessId }) {
 
         {options.length > 0 && (
           <section className="review-options">
-            <PanelTitle icon={<Sparkles />} title="Choose a Review Draft" />
+            <PanelTitle icon={<Sparkles />} title="Choose a review" />
             {options.map((option) => (
               <button
                 className={selectedReview === option ? 'review-option selected' : 'review-option'}
@@ -411,9 +418,8 @@ function CustomerReviewPage({ businessId }) {
               Edit before posting
               <textarea value={selectedReview} onChange={(event) => setSelectedReview(event.target.value)} rows={5} />
             </label>
-            <p className="policy-note">Please post only if this reflects your real experience. Google opens in a new tab.</p>
             <button className="primary-button" onClick={postOnGoogle}>
-              <ExternalLink size={18} /> Post on Google
+              <ExternalLink size={18} /> Copy & open Google
             </button>
           </section>
         )}

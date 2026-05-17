@@ -264,16 +264,48 @@ textarea {
   min-height: 100vh;
   display: grid;
   place-items: start center;
-  padding: 22px 14px;
-  background:
-    linear-gradient(135deg, rgba(35, 107, 84, 0.12), transparent 45%),
-    #f6f7f4;
+  padding: 18px 12px;
+  background: #f8fafd;
 }
 
 .mobile-card {
   width: min(100%, 520px);
   display: grid;
-  gap: 20px;
+  gap: 18px;
+  border-color: #dadce0;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.18);
+}
+
+.customer-shell .primary-button {
+  background: #1a73e8;
+  color: #ffffff;
+  border-radius: 999px;
+}
+
+.google-style-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.google-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #dadce0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #4285f4;
+  font-size: 1.55rem;
+  font-weight: 800;
+  font-family: Arial, sans-serif;
+}
+
+.customer-shell .mobile-card h1 {
+  font-size: clamp(1.85rem, 8vw, 2.75rem);
+  line-height: 1.05;
 }
 
 .flow-block {
@@ -294,20 +326,20 @@ textarea {
 
 .service-chip {
   min-height: 44px;
-  border: 1px solid #cfd8d2;
-  border-radius: 8px;
+  border: 1px solid #dadce0;
+  border-radius: 20px;
   background: #ffffff;
-  color: #17201b;
-  padding: 10px;
+  color: #3c4043;
+  padding: 10px 12px;
   font-size: 0.9rem;
-  font-weight: 800;
+  font-weight: 700;
   text-align: left;
 }
 
 .service-chip.selected {
-  border-color: #236b54;
-  background: #eaf8ef;
-  color: #1f5d48;
+  border-color: #1a73e8;
+  background: #e8f0fe;
+  color: #174ea6;
 }
 
 .selected-services {
@@ -315,11 +347,11 @@ textarea {
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  border: 1px solid #dce3dd;
+  border: 1px solid #dadce0;
   border-radius: 8px;
-  background: #fbfcfa;
+  background: #ffffff;
   padding: 10px 12px;
-  color: #415049;
+  color: #3c4043;
   font-size: 0.88rem;
   line-height: 1.4;
 }
@@ -328,7 +360,7 @@ textarea {
   flex: 0 0 auto;
   border: 0;
   background: transparent;
-  color: #236b54;
+  color: #1a73e8;
   font-weight: 800;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -348,19 +380,19 @@ textarea {
 .star {
   display: grid;
   place-items: center;
-  min-height: 52px;
-  border: 1px solid #cfd8d2;
-  border-radius: 8px;
+  min-height: 54px;
+  border: 1px solid #dadce0;
+  border-radius: 999px;
   background: #ffffff;
-  color: #9aa59f;
-  font-size: 1.8rem;
+  color: #bdc1c6;
+  font-size: 2rem;
   line-height: 1;
 }
 
 .star.selected {
-  border-color: #d7a92f;
-  background: #fff7df;
-  color: #c39116;
+  border-color: #fbbc04;
+  background: #fff8e1;
+  color: #fbbc04;
 }
 
 .experience-grid {
@@ -372,18 +404,18 @@ textarea {
 .experience-grid button,
 .review-option {
   min-height: 48px;
-  border: 1px solid #cfd8d2;
+  border: 1px solid #dadce0;
   border-radius: 8px;
   background: #ffffff;
-  color: #17201b;
+  color: #202124;
   font-weight: 800;
 }
 
 .experience-grid button.selected,
 .review-option.selected {
-  border-color: #236b54;
-  background: #eaf8ef;
-  color: #1f5d48;
+  border-color: #1a73e8;
+  background: #e8f0fe;
+  color: #174ea6;
 }
 
 .experience-grid button.danger {
@@ -398,10 +430,10 @@ textarea {
 }
 
 .review-option {
-  padding: 13px;
+  padding: 14px;
   text-align: left;
-  line-height: 1.4;
-  font-weight: 600;
+  line-height: 1.5;
+  font-weight: 500;
 }
 
 .policy-note {
