@@ -224,6 +224,8 @@ function CustomerReviewPage({ businessId }) {
   const [feedback, setFeedback] = useState('');
   const [options, setOptions] = useState([]);
   const [selectedReview, setSelectedReview] = useState('');
+  const [reviewCopied, setReviewCopied] = useState(false);
+  const [googleReviewUrl, setGoogleReviewUrl] = useState('');
   const [complaintSent, setComplaintSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -261,6 +263,8 @@ function CustomerReviewPage({ businessId }) {
     setExperience(nextExperience);
     setOptions([]);
     setSelectedReview('');
+    setReviewCopied(false);
+    setGoogleReviewUrl('');
     setMessage('');
 
     if (nextExperience === 'not_happy') return;
@@ -276,6 +280,8 @@ function CustomerReviewPage({ businessId }) {
       });
       setOptions(result.options);
       setSelectedReview(result.options[0]);
+      setReviewCopied(false);
+      setGoogleReviewUrl('');
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -285,11 +291,21 @@ function CustomerReviewPage({ businessId }) {
 
   async function postOnGoogle() {
     const result = await api.trackGoogleClick({ businessId, serviceIds: selectedServiceIds, selectedReview });
-    if (selectedReview && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(selectedReview).catch(() => {});
-      setMessage('Review copied. Paste it into Google after it opens.');
+    setGoogleReviewUrl(result.googleReviewLink);
+    await copySelectedReview();
+    const opened = window.open(result.googleReviewLink, '_blank', 'noopener,noreferrer');
+    if (!opened) {
+      window.location.href = result.googleReviewLink;
     }
-    window.open(result.googleReviewLink, '_blank', 'noopener,noreferrer');
+  }
+
+  async function copySelectedReview() {
+    if (!selectedReview) return;
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(selectedReview).catch(() => {});
+    }
+    setReviewCopied(true);
+    setMessage('');
   }
 
   async function submitComplaint(event) {
@@ -306,6 +322,8 @@ function CustomerReviewPage({ businessId }) {
     setMessage('');
     setOptions([]);
     setSelectedReview('');
+    setReviewCopied(false);
+    setGoogleReviewUrl('');
     setRating(0);
     setExperience('');
     setSelectedServiceIds((current) =>
@@ -409,18 +427,45 @@ function CustomerReviewPage({ businessId }) {
               <button
                 className={selectedReview === option ? 'review-option selected' : 'review-option'}
                 key={option}
-                onClick={() => setSelectedReview(option)}
+                onClick={() => {
+                  setSelectedReview(option);
+                  setReviewCopied(false);
+                }}
               >
                 {option}
               </button>
             ))}
             <label>
               Edit before posting
-              <textarea value={selectedReview} onChange={(event) => setSelectedReview(event.target.value)} rows={5} />
+              <textarea
+                value={selectedReview}
+                onChange={(event) => {
+                  setSelectedReview(event.target.value);
+                  setReviewCopied(false);
+                }}
+                rows={5}
+              />
             </label>
-            <button className="primary-button" onClick={postOnGoogle}>
-              <ExternalLink size={18} /> Open Google review
-            </button>
+            <div className="review-actions">
+              <button className="secondary-google-button" onClick={copySelectedReview} type="button">
+                Copy review text
+              </button>
+              <button className="primary-button" onClick={postOnGoogle} type="button">
+                <ExternalLink size={18} /> Open Google review
+              </button>
+            </div>
+            {reviewCopied && (
+              <div className="post-assist">
+                <strong>Review copied</strong>
+                <p>Google may ask for stars again. Tap your rating, paste the copied review, then post.</p>
+                <blockquote>{selectedReview}</blockquote>
+                {googleReviewUrl && (
+                  <a href={googleReviewUrl} target="_blank" rel="noreferrer">
+                    Open Google again
+                  </a>
+                )}
+              </div>
+            )}
           </section>
         )}
 

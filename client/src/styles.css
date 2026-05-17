@@ -134,7 +134,8 @@ textarea {
 }
 
 .primary-button,
-.secondary-button {
+.secondary-button,
+.secondary-google-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -155,6 +156,13 @@ textarea {
   background: #ffffff;
   color: #236b54;
   border-color: #236b54;
+}
+
+.secondary-google-button {
+  background: #ffffff;
+  color: #1a73e8;
+  border-color: #dadce0;
+  border-radius: 999px;
 }
 
 .public-review-link {
@@ -429,6 +437,46 @@ textarea {
   gap: 13px;
 }
 
+.review-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 10px;
+}
+
+.post-assist {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #d2e3fc;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 12px;
+  color: #3c4043;
+}
+
+.post-assist strong {
+  color: #174ea6;
+}
+
+.post-assist p {
+  margin: 0;
+  color: #5f6368;
+  line-height: 1.45;
+}
+
+.post-assist blockquote {
+  margin: 0;
+  border-left: 3px solid #1a73e8;
+  padding-left: 10px;
+  color: #202124;
+  line-height: 1.45;
+}
+
+.post-assist a {
+  color: #1a73e8;
+  font-weight: 800;
+  text-underline-offset: 3px;
+}
+
 .review-option {
   padding: 14px;
   text-align: left;
@@ -487,6 +535,10 @@ textarea {
   }
 
   .service-chip-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .review-actions {
     grid-template-columns: 1fr;
   }
 }
