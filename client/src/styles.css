@@ -334,6 +334,35 @@ textarea {
   text-underline-offset: 3px;
 }
 
+.rating-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.star-rating {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.star {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  border: 1px solid #cfd8d2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #9aa59f;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.star.selected {
+  border-color: #d7a92f;
+  background: #fff7df;
+  color: #c39116;
+}
+
 .experience-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

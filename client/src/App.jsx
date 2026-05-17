@@ -220,6 +220,7 @@ function CustomerReviewPage({ businessId }) {
   const [selectedServiceIds, setSelectedServiceIds] = useState([]);
   const [flowStep, setFlowStep] = useState('services');
   const [experience, setExperience] = useState('');
+  const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [options, setOptions] = useState([]);
   const [selectedReview, setSelectedReview] = useState('');
@@ -248,13 +249,15 @@ function CustomerReviewPage({ businessId }) {
       });
   }, [businessId]);
 
-  async function generateOptions(nextExperience) {
+  async function handleRating(nextRating) {
     if (!selectedServiceIds.length) {
       setMessage('Please select at least one service first.');
       setFlowStep('services');
       return;
     }
 
+    setRating(nextRating);
+    const nextExperience = nextRating >= 4 ? 'loved' : 'not_happy';
     setExperience(nextExperience);
     setOptions([]);
     setSelectedReview('');
@@ -267,7 +270,7 @@ function CustomerReviewPage({ businessId }) {
       const result = await api.getSuggestions({
         businessId,
         serviceIds: selectedServiceIds,
-        experience: nextExperience,
+        experience: 'loved',
         feedback,
         refreshToken: Date.now()
       });
@@ -299,6 +302,8 @@ function CustomerReviewPage({ businessId }) {
     setMessage('');
     setOptions([]);
     setSelectedReview('');
+    setRating(0);
+    setExperience('');
     setSelectedServiceIds((current) =>
       current.includes(serviceId) ? current.filter((id) => id !== serviceId) : [...current, serviceId]
     );
@@ -368,11 +373,23 @@ function CustomerReviewPage({ businessId }) {
               <button type="button" onClick={() => setFlowStep('services')}>Change</button>
             </div>
 
-            <div className="experience-grid">
-              <button className={experience === 'loved' ? 'selected' : ''} onClick={() => generateOptions('loved')}>Loved it</button>
-              <button className={experience === 'good' ? 'selected' : ''} onClick={() => generateOptions('good')}>Good</button>
-              <button className={experience === 'not_happy' ? 'selected danger' : 'danger'} onClick={() => generateOptions('not_happy')}>Not happy</button>
-            </div>
+            <section className="rating-panel">
+              <PanelTitle icon={<Sparkles />} title="Rate Your Visit" />
+              <div className="star-rating" aria-label="Rate your salon experience">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    type="button"
+                    key={star}
+                    className={rating >= star ? 'star selected' : 'star'}
+                    aria-label={`${star} star rating`}
+                    onClick={() => handleRating(star)}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+              <p className="policy-note">4 or 5 stars will create review drafts. 1 to 3 stars will open private feedback.</p>
+            </section>
           </>
         )}
 

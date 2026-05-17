@@ -49,6 +49,8 @@ async function generateWithOpenCompatibleModel({ business, service, services, ex
             'Generate exactly 3 short, natural, human-like options.',
             'Never invent facts, guarantees, rankings, discounts, staff names, or outcomes.',
             'Do not say the business is #1, best, guaranteed, or perfect.',
+            'Mention every selected service naturally at least once.',
+            'Include salon ambience, professional staff, or friendly environment only as natural wording.',
             'Use simple language and avoid keyword stuffing.',
             'Return only JSON: {"options":["...","...","..."]}.'
           ].join(' ')
@@ -93,6 +95,8 @@ async function generateWithOpenAI({ business, service, services, experience, fee
           'Generate exactly 3 short, natural, human-like options.',
           'Never invent facts, guarantees, rankings, discounts, staff names, or outcomes.',
           'Do not say the business is #1, best, guaranteed, or perfect.',
+          'Mention every selected service naturally at least once.',
+          'Include salon ambience, professional staff, or friendly environment only as natural wording.',
           'Use simple language and avoid keyword stuffing.',
           'Return only JSON: {"options":["...","...","..."]}.'
         ].join(' ')
@@ -133,7 +137,11 @@ function generateFallbackSuggestions({ business, service, services, experience, 
 }
 
 function buildReviewContext({ business, service, services }) {
-  const keyword = sample(service.keywords?.filter(Boolean)) || service.name;
+  const serviceNames = services.map((item) => item.name);
+  const keywordPhrase = humanList(
+    services.map((item) => item.keywords?.filter(Boolean)?.[0] || item.name)
+  );
+  const keyword = keywordPhrase || service.name;
   const serviceName = humanList(services.map((item) => item.name.toLowerCase()));
   const businessName = business.name;
   const location = business.location;
@@ -145,12 +153,8 @@ function buildReviewContext({ business, service, services }) {
     serviceName,
     location,
     maybeLocation,
-    servicePhrase: sample([
-      keyword,
-      service.name,
-      `${serviceName} service`,
-      humanList(services.map((item) => item.name))
-    ]),
+    servicePhrase: humanList(serviceNames),
+    keywordPhrase,
     smoothPhrase: sample([
       'smooth',
       'easy',
@@ -171,38 +175,45 @@ function buildReviewContext({ business, service, services }) {
       'Everything was explained in a simple way.',
       'The service felt careful and professional.',
       'The whole process was handled well.'
+    ]),
+    salonPhrase: sample([
+      'The salon ambience was pleasant and the staff felt professional.',
+      'The staff was friendly and the salon environment felt comfortable.',
+      'I liked the professional staff and the friendly salon atmosphere.',
+      'The salon felt clean, welcoming, and professionally managed.',
+      'The friendly environment made the visit feel even better.'
     ])
   };
 }
 
 const lovedTemplates = [
-  ({ businessName, servicePhrase, maybeLocation, smoothPhrase, carePhrase }) =>
-    `I had a great experience with ${servicePhrase} at ${businessName}${maybeLocation}. The process was ${smoothPhrase}, and the team was ${carePhrase}.`,
-  ({ businessName, serviceName, appreciationPhrase }) =>
-    `${businessName} made my ${serviceName} experience really easy. ${appreciationPhrase}`,
-  ({ businessName, keyword, carePhrase }) =>
-    `Really happy with the ${keyword} from ${businessName}. The service felt ${carePhrase} and easy to follow.`,
-  ({ businessName, servicePhrase, smoothPhrase }) =>
-    `I loved how ${smoothPhrase} the ${servicePhrase} experience was at ${businessName}. I felt well taken care of.`,
-  ({ businessName, serviceName, carePhrase }) =>
-    `Had a very good ${serviceName} experience with ${businessName}. The team was ${carePhrase}, and everything felt straightforward.`,
-  ({ businessName, keyword, maybeLocation, appreciationPhrase }) =>
-    `Great ${keyword} experience at ${businessName}${maybeLocation}. ${appreciationPhrase}`
+  ({ businessName, servicePhrase, keywordPhrase, maybeLocation, smoothPhrase, carePhrase, salonPhrase }) =>
+    `I had a great experience with ${servicePhrase} at ${businessName}${maybeLocation}. The ${keywordPhrase} services felt ${smoothPhrase}, and the team was ${carePhrase}. ${salonPhrase}`,
+  ({ businessName, serviceName, keywordPhrase, appreciationPhrase, salonPhrase }) =>
+    `${businessName} made my ${serviceName} experience really easy. The ${keywordPhrase} services were handled well. ${appreciationPhrase} ${salonPhrase}`,
+  ({ businessName, servicePhrase, keywordPhrase, carePhrase, salonPhrase }) =>
+    `Really happy with ${servicePhrase} from ${businessName}. The ${keywordPhrase} experience felt ${carePhrase} and easy to follow. ${salonPhrase}`,
+  ({ businessName, servicePhrase, keywordPhrase, smoothPhrase, salonPhrase }) =>
+    `I loved how ${smoothPhrase} the ${servicePhrase} experience was at ${businessName}. The ${keywordPhrase} services felt well managed. ${salonPhrase}`,
+  ({ businessName, serviceName, keywordPhrase, carePhrase, salonPhrase }) =>
+    `Had a very good ${serviceName} experience with ${businessName}. The ${keywordPhrase} services were ${carePhrase}, and everything felt straightforward. ${salonPhrase}`,
+  ({ businessName, servicePhrase, keywordPhrase, maybeLocation, appreciationPhrase, salonPhrase }) =>
+    `Great ${servicePhrase} experience at ${businessName}${maybeLocation}. The ${keywordPhrase} services were easy to recommend. ${appreciationPhrase} ${salonPhrase}`
 ];
 
 const goodTemplates = [
-  ({ businessName, servicePhrase, smoothPhrase }) =>
-    `I had a good experience with ${servicePhrase} at ${businessName}. The process was ${smoothPhrase} and clear.`,
-  ({ businessName, serviceName, carePhrase }) =>
-    `${businessName} handled my ${serviceName} well. The team was ${carePhrase}, and the visit felt organized.`,
-  ({ businessName, keyword, maybeLocation }) =>
-    `Good service overall from ${businessName}${maybeLocation}. The ${keyword} experience was simple and helpful.`,
-  ({ businessName, servicePhrase, appreciationPhrase }) =>
-    `My ${servicePhrase} experience with ${businessName} was positive. ${appreciationPhrase}`,
-  ({ businessName, serviceName, smoothPhrase }) =>
-    `I had a pleasant ${serviceName} visit at ${businessName}. It was ${smoothPhrase} and easy to understand.`,
-  ({ businessName, keyword, carePhrase }) =>
-    `The ${keyword} service at ${businessName} was good. The team was ${carePhrase} and handled things well.`
+  ({ businessName, servicePhrase, keywordPhrase, smoothPhrase, salonPhrase }) =>
+    `I had a good experience with ${servicePhrase} at ${businessName}. The ${keywordPhrase} services were ${smoothPhrase} and clear. ${salonPhrase}`,
+  ({ businessName, serviceName, keywordPhrase, carePhrase, salonPhrase }) =>
+    `${businessName} handled my ${serviceName} well. The ${keywordPhrase} services felt ${carePhrase}, and the visit was organized. ${salonPhrase}`,
+  ({ businessName, servicePhrase, keywordPhrase, maybeLocation, salonPhrase }) =>
+    `Good service overall from ${businessName}${maybeLocation}. The ${servicePhrase} and ${keywordPhrase} experience was simple and helpful. ${salonPhrase}`,
+  ({ businessName, servicePhrase, keywordPhrase, appreciationPhrase, salonPhrase }) =>
+    `My ${servicePhrase} experience with ${businessName} was positive. The ${keywordPhrase} services were handled nicely. ${appreciationPhrase} ${salonPhrase}`,
+  ({ businessName, serviceName, keywordPhrase, smoothPhrase, salonPhrase }) =>
+    `I had a pleasant ${serviceName} visit at ${businessName}. The ${keywordPhrase} services were ${smoothPhrase} and easy to understand. ${salonPhrase}`,
+  ({ businessName, servicePhrase, keywordPhrase, carePhrase, salonPhrase }) =>
+    `The ${servicePhrase} at ${businessName} was good. The ${keywordPhrase} services were ${carePhrase}, and the staff handled things well. ${salonPhrase}`
 ];
 
 function normalizeOptions(options, { business, service }) {
