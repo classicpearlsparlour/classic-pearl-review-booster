@@ -423,6 +423,11 @@ function CustomerReviewPage({ businessId }) {
         {options.length > 0 && (
           <section className="review-options">
             <PanelTitle icon={<Sparkles />} title="Choose a review" />
+            <div className="handoff-strip">
+              <span>1. Pick text</span>
+              <span>2. Copy opens Google</span>
+              <span>3. Paste & post</span>
+            </div>
             {options.map((option) => (
               <button
                 className={selectedReview === option ? 'review-option selected' : 'review-option'}
@@ -451,13 +456,16 @@ function CustomerReviewPage({ businessId }) {
                 Copy review text
               </button>
               <button className="primary-button" onClick={postOnGoogle} type="button">
-                <ExternalLink size={18} /> Open Google review
+                <ExternalLink size={18} /> Copy & open Google
               </button>
             </div>
+            <p className="google-limit-note">
+              Google opens separately for security. Your review text is copied automatically.
+            </p>
             {reviewCopied && (
               <div className="post-assist">
                 <strong>Review copied</strong>
-                <p>Google may ask for stars again. Tap your rating, paste the copied review, then post.</p>
+                <p>On Google, tap stars, paste the copied text, then post.</p>
                 <blockquote>{selectedReview}</blockquote>
                 {googleReviewUrl && (
                   <a href={googleReviewUrl} target="_blank" rel="noreferrer">

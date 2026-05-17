@@ -437,10 +437,37 @@ textarea {
   gap: 13px;
 }
 
+.handoff-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.handoff-strip span {
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+  border: 1px solid #dadce0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #3c4043;
+  padding: 7px 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: center;
+}
+
 .review-actions {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: 10px;
+}
+
+.google-limit-note {
+  margin: -3px 0 0;
+  color: #5f6368;
+  font-size: 0.84rem;
+  line-height: 1.4;
 }
 
 .post-assist {
@@ -539,6 +566,10 @@ textarea {
   }
 
   .review-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .handoff-strip {
     grid-template-columns: 1fr;
   }
 }
