@@ -419,7 +419,7 @@ function CustomerReviewPage({ businessId }) {
               <textarea value={selectedReview} onChange={(event) => setSelectedReview(event.target.value)} rows={5} />
             </label>
             <button className="primary-button" onClick={postOnGoogle}>
-              <ExternalLink size={18} /> Copy & open Google
+              <ExternalLink size={18} /> Open Google review
             </button>
           </section>
         )}

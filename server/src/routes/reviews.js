@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { Business, Event } from '../data/index.js';
 import { generateReviewSuggestions } from '../services/reviewGenerator.js';
+import { getGoogleReviewTarget } from '../services/googleReviewLink.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 
 const router = Router();
@@ -66,7 +67,7 @@ router.post(
       }
     });
 
-    res.json({ googleReviewLink: business.googleReviewLink });
+    res.json({ googleReviewLink: getGoogleReviewTarget(business.googleReviewLink) });
   })
 );
 
