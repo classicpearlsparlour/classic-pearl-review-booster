@@ -48,13 +48,14 @@ async function generateWithOpenCompatibleModel({ business, service, services, ex
           content: [
             'You are an expert copywriter helping salon clients write authentic, natural-sounding Google reviews.',
             'Generate exactly 3 completely distinct review options based on the user inputs, each written from a different customer perspective/style:',
-            'Option 1 (Detailed & Service-Focused): Focuses on the precision, high technical skill, and excellent quality of the services received. It MUST naturally weave in every single selected service.',
-            'Option 2 (Luxury, Pampering & Ambience): Focuses on the premium, relaxing, and clean atmosphere of the salon, describing the selected services as part of a high-end pampering session.',
-            'Option 3 (Friendly Staff & Quick Satisfaction): Focuses on the warm hospitality, friendliness of the team, prompt service, and great overall satisfaction with the results.',
-            'Strict Spam Prevention and Naturalness Guidelines:',
+            'Option 1 (Detailed & Service-Focused): Focuses on the precision, high technical skill, and excellent quality of the services received. It MUST naturally weave in every single selected service, praise the "salon staff" and "team", and mention the skill of the "stylist".',
+            'Option 2 (Luxury, Pampering & Ambience): Focuses on the premium, relaxing, and clean "salon ambience", describing the selected services as part of a high-end pampering session handled by a wonderful "team". It must also praise the "salon staff" and "stylist".',
+            'Option 3 (Friendly Staff & Quick Satisfaction): Focuses on the warm hospitality of the "salon staff", the promptness of the "team", and the beautiful "salon ambience", praising the "stylist" who did the work.',
+            'Strict Keyword Rules:',
+            '- EVERY single review suggestion option MUST explicitly, naturally, and prominently include the four phrases/words: "salon ambience", "salon staff", "team", and "stylist" (or "stylists"). This is mandatory.',
             '- Never list services in a list format (like "services: A, B, C"). Weave them organically into complete, realistic sentences.',
-            '- Use simple, conversational, human language. Write as if a real person is writing on their phone (do not sound like a marketing agency or SEO keyword-stuffed copy).',
-            '- Vary the sentence structures across all 3 options. Do not start all drafts the same way (avoid starting every draft with "I visited...").',
+            '- Use simple, conversational, human language. Write as if a real person is writing on their phone.',
+            '- Vary the sentence structures across all 3 options. Do not start all drafts the same way.',
             '- Absolutely DO NOT use cheesy, promotional words like "perfectly", "guaranteed", "flawless", "number one", "#1", or "best ever" which trigger Google spam detection filters.',
             '- Do not invent staff names, prices, or promotions.',
             'Return ONLY JSON in this format: {"options": ["Option 1 text", "Option 2 text", "Option 3 text"]}.'
@@ -99,13 +100,14 @@ async function generateWithOpenAI({ business, service, services, experience, fee
         content: [
           'You are an expert copywriter helping salon clients write authentic, natural-sounding Google reviews.',
           'Generate exactly 3 completely distinct review options based on the user inputs, each written from a different customer perspective/style:',
-          'Option 1 (Detailed & Service-Focused): Focuses on the precision, high technical skill, and excellent quality of the services received. It MUST naturally weave in every single selected service.',
-          'Option 2 (Luxury, Pampering & Ambience): Focuses on the premium, relaxing, and clean atmosphere of the salon, describing the selected services as part of a high-end pampering session.',
-          'Option 3 (Friendly Staff & Quick Satisfaction): Focuses on the warm hospitality, friendliness of the team, prompt service, and great overall satisfaction with the results.',
-          'Strict Spam Prevention and Naturalness Guidelines:',
+          'Option 1 (Detailed & Service-Focused): Focuses on the precision, high technical skill, and excellent quality of the services received. It MUST naturally weave in every single selected service, praise the "salon staff" and "team", and mention the skill of the "stylist".',
+          'Option 2 (Luxury, Pampering & Ambience): Focuses on the premium, relaxing, and clean "salon ambience", describing the selected services as part of a high-end pampering session handled by a wonderful "team". It must also praise the "salon staff" and "stylist".',
+          'Option 3 (Friendly Staff & Quick Satisfaction): Focuses on the warm hospitality of the "salon staff", the promptness of the "team", and the beautiful "salon ambience", praising the "stylist" who did the work.',
+          'Strict Keyword Rules:',
+          '- EVERY single review suggestion option MUST explicitly, naturally, and prominently include the four phrases/words: "salon ambience", "salon staff", "team", and "stylist" (or "stylists"). This is mandatory.',
           '- Never list services in a list format (like "services: A, B, C"). Weave them organically into complete, realistic sentences.',
-          '- Use simple, conversational, human language. Write as if a real person is writing on their phone (do not sound like a marketing agency or SEO keyword-stuffed copy).',
-          '- Vary the sentence structures across all 3 options. Do not start all drafts the same way (avoid starting every draft with "I visited...").',
+          '- Use simple, conversational, human language. Write as if a real person is writing on their phone.',
+          '- Vary the sentence structures across all 3 options. Do not start all drafts the same way.',
           '- Absolutely DO NOT use cheesy, promotional words like "perfectly", "guaranteed", "flawless", "number one", "#1", or "best ever" which trigger Google spam detection filters.',
           '- Do not invent staff names, prices, or promotions.',
           'Return ONLY JSON in this format: {"options": ["Option 1 text", "Option 2 text", "Option 3 text"]}.'
@@ -163,42 +165,42 @@ function buildReviewContext({ business, service, services }) {
 const lovedTemplates = {
   service: [
     ({ businessName, servicePhrase, maybeLocation }) =>
-      `Had a wonderful experience at ${businessName}${maybeLocation} for my ${servicePhrase}. The team paid close attention to exactly what I wanted. The quality is clear and the overall service felt highly detailed and professional.`,
+      `Outstanding visit at ${businessName}${maybeLocation}! The salon staff was incredibly welcoming, and my stylist did a fantastic job with my ${servicePhrase}. The entire team was professional, and I loved the clean salon ambience. Highly recommend!`,
     ({ businessName, servicePhrase }) =>
-      `Really impressed with my ${servicePhrase} at ${businessName}. The technical skill is obvious and they didn't rush through the appointment. It was a solid, detailed service that turned out exactly how I hoped.`
+      `Really impressed by the expertise of the team at ${businessName}. My stylist handled my ${servicePhrase} with absolute precision, and the warm salon staff made me feel comfortable throughout. The beautiful salon ambience was an added bonus!`
   ],
   ambience: [
     ({ businessName, servicePhrase, maybeLocation }) =>
-      `${businessName}${maybeLocation} has such a clean, relaxing space. I had a ${servicePhrase} here and felt completely pampered from start to finish. The calm, tranquil salon ambience makes it the perfect self-care spot.`,
+      `I loved the luxurious salon ambience at ${businessName}${maybeLocation}! I had a ${servicePhrase} here, and the environment felt peaceful and clean. The salon staff is friendly, my stylist was highly skilled, and the entire team is top-tier.`,
     ({ businessName, servicePhrase }) =>
-      `Love the warm and welcoming feel of ${businessName}. My ${servicePhrase} visit was so relaxing. The environment is peaceful, clean, and comfortable, making the whole appointment feel like a treat.`
+      `The gorgeous salon ambience at ${businessName} makes it the perfect self-care spot. My stylist was wonderful, and the entire salon staff is warm and attentive. The team took such good care of me during my ${servicePhrase}!`
   ],
   hospitality: [
     ({ businessName, servicePhrase, maybeLocation }) =>
-      `Such a friendly and professional team at ${businessName}${maybeLocation}! They made my appointment for ${servicePhrase} feel easy and comfortable. Everyone was super welcoming and took great care of me.`,
+      `Such a professional team and beautiful salon ambience at ${businessName}${maybeLocation}! The salon staff makes sure you feel pampered. My stylist was incredibly skilled with my ${servicePhrase}.`,
     ({ businessName, servicePhrase }) =>
-      `Highly recommend ${businessName} for any salon service. The staff is warm and attentive, handling my ${servicePhrase} with absolute care. They are prompt, accommodating, and very pleasant to deal with.`
+      `Highly recommend this salon! The salon staff is extremely warm, and the team is prompt and detailed. The wonderful salon ambience combined with the skill of my stylist made my ${servicePhrase} a stellar experience.`
   ]
 };
 
 const goodTemplates = {
   service: [
     ({ businessName, servicePhrase, maybeLocation }) =>
-      `I had a good appointment at ${businessName}${maybeLocation} for ${servicePhrase}. They were very professional and did a neat job.`,
+      `I had a great appointment at ${businessName}${maybeLocation} for ${servicePhrase}. The salon staff was very welcoming, my stylist did a neat job, the team was helpful, and the salon ambience was lovely.`,
     ({ businessName, servicePhrase }) =>
-      `My ${servicePhrase} at ${businessName} was handled nicely. The service was clear and they did exactly what I requested.`
+      `My ${servicePhrase} at ${businessName} was handled beautifully. The team is professional, and my stylist did a wonderful job. Excellent service by the salon staff and a great salon ambience!`
   ],
   ambience: [
     ({ businessName, servicePhrase, maybeLocation }) =>
-      `The salon at ${businessName}${maybeLocation} is clean and organized. I had a pleasant experience getting my ${servicePhrase}.`,
+      `The salon ambience at ${businessName}${maybeLocation} is clean and peaceful. Had a good experience getting my ${servicePhrase}. The entire team and salon staff are polite, and the stylist did a neat job.`,
     ({ businessName, servicePhrase }) =>
-      `Nice and tidy space at ${businessName}. My ${servicePhrase} appointment was comfortable and peaceful.`
+      `Wonderful salon ambience and very comfortable setting at ${businessName}. The salon staff was friendly, the team was quick, and my stylist took care of my ${servicePhrase} beautifully.`
   ],
   hospitality: [
     ({ businessName, servicePhrase, maybeLocation }) =>
-      `Friendly service at ${businessName}${maybeLocation} for ${servicePhrase}. The staff is polite and made sure I had everything I needed.`,
+      `Friendly and welcoming salon staff at ${businessName}${maybeLocation}! They made my appointment for ${servicePhrase} feel very easy. The team is super accommodating, the salon ambience is great, and my stylist was excellent.`,
     ({ businessName, servicePhrase }) =>
-      `Satisfied with the customer service at ${businessName}. They handled my ${servicePhrase} with care and made the visit easy.`
+      `Satisfied with the service at ${businessName}. The team was warm, and the salon staff handled my ${servicePhrase} with care. Great salon ambience, professional stylists, and very friendly environment.`
   ]
 };
 
