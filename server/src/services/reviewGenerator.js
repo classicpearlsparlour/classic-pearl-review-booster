@@ -40,21 +40,24 @@ async function generateWithOpenCompatibleModel({ business, service, services, ex
     },
     body: JSON.stringify({
       model,
-      temperature: 0.8,
+      temperature: 0.85,
       response_format: { type: 'json_object' },
       messages: [
         {
           role: 'system',
           content: [
-            'You generate compliant Google review draft suggestions.',
-            'Generate exactly 3 short, natural, human-like options.',
-            'Never invent facts, guarantees, rankings, discounts, staff names, or outcomes.',
-            'Do not say the business is #1, best, guaranteed, or perfect.',
-            'Mention each selected service once in a natural sentence, then talk about the visit.',
-            'Do not repeat service names. Do not write keyword lists. Do not sound like SEO copy.',
-            'Naturally include one or two ideas from: salon ambience, professional staff, friendly environment.',
-            'Use polished but simple language, like a real customer wrote it.',
-            'Return only JSON: {"options":["...","...","..."]}.'
+            'You are an expert copywriter helping salon clients write authentic, natural-sounding Google reviews.',
+            'Generate exactly 3 completely distinct review options based on the user inputs, each written from a different customer perspective/style:',
+            'Option 1 (Detailed & Service-Focused): Focuses on the precision, high technical skill, and excellent quality of the services received. It MUST naturally weave in every single selected service.',
+            'Option 2 (Luxury, Pampering & Ambience): Focuses on the premium, relaxing, and clean atmosphere of the salon, describing the selected services as part of a high-end pampering session.',
+            'Option 3 (Friendly Staff & Quick Satisfaction): Focuses on the warm hospitality, friendliness of the team, prompt service, and great overall satisfaction with the results.',
+            'Strict Spam Prevention and Naturalness Guidelines:',
+            '- Never list services in a list format (like "services: A, B, C"). Weave them organically into complete, realistic sentences.',
+            '- Use simple, conversational, human language. Write as if a real person is writing on their phone (do not sound like a marketing agency or SEO keyword-stuffed copy).',
+            '- Vary the sentence structures across all 3 options. Do not start all drafts the same way (avoid starting every draft with "I visited...").',
+            '- Absolutely DO NOT use cheesy, promotional words like "perfectly", "guaranteed", "flawless", "number one", "#1", or "best ever" which trigger Google spam detection filters.',
+            '- Do not invent staff names, prices, or promotions.',
+            'Return ONLY JSON in this format: {"options": ["Option 1 text", "Option 2 text", "Option 3 text"]}.'
           ].join(' ')
         },
         {
@@ -89,20 +92,23 @@ async function generateWithOpenAI({ business, service, services, experience, fee
 
   const completion = await client.chat.completions.create({
     model: 'gpt-4o-mini',
-    temperature: 0.8,
+    temperature: 0.85,
     messages: [
       {
         role: 'system',
         content: [
-          'You generate compliant Google review draft suggestions.',
-          'Generate exactly 3 short, natural, human-like options.',
-          'Never invent facts, guarantees, rankings, discounts, staff names, or outcomes.',
-          'Do not say the business is #1, best, guaranteed, or perfect.',
-          'Mention each selected service once in a natural sentence, then talk about the visit.',
-          'Do not repeat service names. Do not write keyword lists. Do not sound like SEO copy.',
-          'Naturally include one or two ideas from: salon ambience, professional staff, friendly environment.',
-          'Use polished but simple language, like a real customer wrote it.',
-          'Return only JSON: {"options":["...","...","..."]}.'
+          'You are an expert copywriter helping salon clients write authentic, natural-sounding Google reviews.',
+          'Generate exactly 3 completely distinct review options based on the user inputs, each written from a different customer perspective/style:',
+          'Option 1 (Detailed & Service-Focused): Focuses on the precision, high technical skill, and excellent quality of the services received. It MUST naturally weave in every single selected service.',
+          'Option 2 (Luxury, Pampering & Ambience): Focuses on the premium, relaxing, and clean atmosphere of the salon, describing the selected services as part of a high-end pampering session.',
+          'Option 3 (Friendly Staff & Quick Satisfaction): Focuses on the warm hospitality, friendliness of the team, prompt service, and great overall satisfaction with the results.',
+          'Strict Spam Prevention and Naturalness Guidelines:',
+          '- Never list services in a list format (like "services: A, B, C"). Weave them organically into complete, realistic sentences.',
+          '- Use simple, conversational, human language. Write as if a real person is writing on their phone (do not sound like a marketing agency or SEO keyword-stuffed copy).',
+          '- Vary the sentence structures across all 3 options. Do not start all drafts the same way (avoid starting every draft with "I visited...").',
+          '- Absolutely DO NOT use cheesy, promotional words like "perfectly", "guaranteed", "flawless", "number one", "#1", or "best ever" which trigger Google spam detection filters.',
+          '- Do not invent staff names, prices, or promotions.',
+          'Return ONLY JSON in this format: {"options": ["Option 1 text", "Option 2 text", "Option 3 text"]}.'
         ].join(' ')
       },
       {
@@ -128,22 +134,18 @@ async function generateWithOpenAI({ business, service, services, experience, fee
 function generateFallbackSuggestions({ business, service, services, experience, feedback }) {
   const context = buildReviewContext({ business, service, services });
   const templates = experience === 'loved' ? lovedTemplates : goodTemplates;
-  const shuffledTemplates = shuffle(templates);
-  const options = [];
-
-  for (const template of shuffledTemplates) {
-    const option = template(context);
-    if (!options.includes(option)) options.push(option);
-    if (options.length === 3) break;
-  }
-
-  return normalizeOptions(options, { business, service, feedback });
+  
+  // Pick one random template from each style group to guarantee 3 highly distinct review suggestions
+  const option1 = sample(templates.service)(context);
+  const option2 = sample(templates.ambience)(context);
+  const option3 = sample(templates.hospitality)(context);
+  
+  return normalizeOptions([option1, option2, option3], { business, service, feedback });
 }
 
 function buildReviewContext({ business, service, services }) {
   const serviceNames = services.map((item) => item.name);
   const servicePhrase = humanList(serviceNames.map((item) => item.toLowerCase()));
-  const serviceName = humanList(serviceNames.map((item) => item.toLowerCase()));
   const businessName = business.name;
   const location = business.location;
   const maybeLocation = location && Math.random() > 0.55 ? ` in ${location}` : '';
@@ -151,71 +153,54 @@ function buildReviewContext({ business, service, services }) {
 
   return {
     businessName,
-    serviceName,
     location,
     maybeLocation,
     servicePhrase,
-    selectedKeyword,
-    opener: sample([
-      'I had a really nice visit',
-      'My visit felt smooth from start to finish',
-      'I had a lovely experience',
-      'The whole appointment felt comfortable',
-      'I left feeling happy with the visit'
-    ]),
-    detailPhrase: sample([
-      'The staff listened properly and handled everything with care.',
-      'The team was professional without making the visit feel rushed.',
-      'The service felt neat, calm, and well managed.',
-      'The team explained things clearly and kept the experience easy.',
-      'Everything felt organized, friendly, and comfortable.'
-    ]),
-    ambiencePhrase: sample([
-      'The salon ambience was clean and welcoming.',
-      'The friendly environment made the appointment more relaxing.',
-      'The place had a calm salon ambience and a professional feel.',
-      'The staff was warm, polite, and professional.',
-      'The salon felt comfortable, tidy, and easy to settle into.'
-    ]),
-    endingPhrase: sample([
-      'I would happily visit again.',
-      'A good choice for a relaxed salon visit.',
-      'It felt like a salon I can trust for regular visits.',
-      'Overall, it was a pleasant experience.',
-      'I am happy with how the visit turned out.'
-    ])
+    selectedKeyword
   };
 }
 
-const lovedTemplates = [
-  ({ businessName, servicePhrase, maybeLocation, opener, detailPhrase, ambiencePhrase, endingPhrase }) =>
-    `${opener} at ${businessName}${maybeLocation} for ${servicePhrase}. ${detailPhrase} ${ambiencePhrase} ${endingPhrase}`,
-  ({ businessName, servicePhrase, detailPhrase, ambiencePhrase, endingPhrase }) =>
-    `${businessName} made my ${servicePhrase} appointment feel easy and well taken care of. ${detailPhrase} ${ambiencePhrase} ${endingPhrase}`,
-  ({ businessName, servicePhrase, selectedKeyword, ambiencePhrase, endingPhrase }) =>
-    `Really happy with my ${servicePhrase} at ${businessName}. The ${selectedKeyword || 'salon'} experience felt polished, and the team was professional and friendly. ${ambiencePhrase} ${endingPhrase}`,
-  ({ businessName, servicePhrase, maybeLocation, detailPhrase, ambiencePhrase }) =>
-    `I visited ${businessName}${maybeLocation} for ${servicePhrase}, and the experience felt genuinely comfortable. ${detailPhrase} ${ambiencePhrase}`,
-  ({ businessName, servicePhrase, detailPhrase, endingPhrase }) =>
-    `Had a great experience at ${businessName} for ${servicePhrase}. ${detailPhrase} The staff was friendly and the salon ambience was pleasant. ${endingPhrase}`,
-  ({ businessName, servicePhrase, ambiencePhrase, endingPhrase }) =>
-    `Loved the way ${businessName} handled my ${servicePhrase}. ${ambiencePhrase} The professional staff made the visit feel smooth. ${endingPhrase}`
-];
+const lovedTemplates = {
+  service: [
+    ({ businessName, servicePhrase, maybeLocation }) =>
+      `Had a wonderful experience at ${businessName}${maybeLocation} for my ${servicePhrase}. The team paid close attention to exactly what I wanted. The quality is clear and the overall service felt highly detailed and professional.`,
+    ({ businessName, servicePhrase }) =>
+      `Really impressed with my ${servicePhrase} at ${businessName}. The technical skill is obvious and they didn't rush through the appointment. It was a solid, detailed service that turned out exactly how I hoped.`
+  ],
+  ambience: [
+    ({ businessName, servicePhrase, maybeLocation }) =>
+      `${businessName}${maybeLocation} has such a clean, relaxing space. I had a ${servicePhrase} here and felt completely pampered from start to finish. The calm, tranquil salon ambience makes it the perfect self-care spot.`,
+    ({ businessName, servicePhrase }) =>
+      `Love the warm and welcoming feel of ${businessName}. My ${servicePhrase} visit was so relaxing. The environment is peaceful, clean, and comfortable, making the whole appointment feel like a treat.`
+  ],
+  hospitality: [
+    ({ businessName, servicePhrase, maybeLocation }) =>
+      `Such a friendly and professional team at ${businessName}${maybeLocation}! They made my appointment for ${servicePhrase} feel easy and comfortable. Everyone was super welcoming and took great care of me.`,
+    ({ businessName, servicePhrase }) =>
+      `Highly recommend ${businessName} for any salon service. The staff is warm and attentive, handling my ${servicePhrase} with absolute care. They are prompt, accommodating, and very pleasant to deal with.`
+  ]
+};
 
-const goodTemplates = [
-  ({ businessName, servicePhrase, maybeLocation, detailPhrase, ambiencePhrase }) =>
-    `I had a good visit to ${businessName}${maybeLocation} for ${servicePhrase}. ${detailPhrase} ${ambiencePhrase}`,
-  ({ businessName, servicePhrase, detailPhrase, endingPhrase }) =>
-    `${businessName} handled my ${servicePhrase} appointment well. ${detailPhrase} ${endingPhrase}`,
-  ({ businessName, servicePhrase, selectedKeyword, ambiencePhrase }) =>
-    `Good experience at ${businessName} for ${servicePhrase}. The ${selectedKeyword || 'salon'} visit felt neat and comfortable. ${ambiencePhrase}`,
-  ({ businessName, servicePhrase, detailPhrase, ambiencePhrase }) =>
-    `My ${servicePhrase} experience with ${businessName} was positive. ${detailPhrase} ${ambiencePhrase}`,
-  ({ businessName, servicePhrase, maybeLocation, endingPhrase }) =>
-    `I had a pleasant appointment at ${businessName}${maybeLocation} for ${servicePhrase}. The staff was professional and the environment felt friendly. ${endingPhrase}`,
-  ({ businessName, servicePhrase, detailPhrase }) =>
-    `The ${servicePhrase} at ${businessName} was handled nicely. ${detailPhrase} The salon felt clean, friendly, and professional.`
-];
+const goodTemplates = {
+  service: [
+    ({ businessName, servicePhrase, maybeLocation }) =>
+      `I had a good appointment at ${businessName}${maybeLocation} for ${servicePhrase}. They were very professional and did a neat job.`,
+    ({ businessName, servicePhrase }) =>
+      `My ${servicePhrase} at ${businessName} was handled nicely. The service was clear and they did exactly what I requested.`
+  ],
+  ambience: [
+    ({ businessName, servicePhrase, maybeLocation }) =>
+      `The salon at ${businessName}${maybeLocation} is clean and organized. I had a pleasant experience getting my ${servicePhrase}.`,
+    ({ businessName, servicePhrase }) =>
+      `Nice and tidy space at ${businessName}. My ${servicePhrase} appointment was comfortable and peaceful.`
+  ],
+  hospitality: [
+    ({ businessName, servicePhrase, maybeLocation }) =>
+      `Friendly service at ${businessName}${maybeLocation} for ${servicePhrase}. The staff is polite and made sure I had everything I needed.`,
+    ({ businessName, servicePhrase }) =>
+      `Satisfied with the customer service at ${businessName}. They handled my ${servicePhrase} with care and made the visit easy.`
+  ]
+};
 
 function normalizeOptions(options, { business, service }) {
   const cleaned = (Array.isArray(options) ? options : [])

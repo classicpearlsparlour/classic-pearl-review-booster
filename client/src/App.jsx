@@ -170,6 +170,26 @@ function AdminApp() {
             <div className="qr-wrap">
               <img src={qr.qrDataUrl} alt="Business QR code" />
               <a href={qr.scanUrl} target="_blank" rel="noreferrer">{qr.scanUrl}</a>
+              <div className="qr-share-section">
+                <a
+                  className="share-btn whatsapp"
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                    `Please review your experience with ${selectedBusiness?.name || 'Classic Pearls'} here: ${qr.scanUrl}`
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Share via WhatsApp
+                </a>
+                <a
+                  className="share-btn sms"
+                  href={`sms:?body=${encodeURIComponent(
+                    `Please review your experience with ${selectedBusiness?.name || 'Classic Pearls'} here: ${qr.scanUrl}`
+                  )}`}
+                >
+                  Share via SMS
+                </a>
+              </div>
             </div>
           )}
           {!qr && <p className="subtle">Create a business to generate its QR code.</p>}
@@ -230,6 +250,7 @@ function CustomerReviewPage({ businessId }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [loadFailed, setLoadFailed] = useState(false);
+  const [showHandoffModal, setShowHandoffModal] = useState(false);
 
   const popularServices = useMemo(() => getPopularServices(business?.services || []), [business]);
   const selectedServices = useMemo(
@@ -289,14 +310,9 @@ function CustomerReviewPage({ businessId }) {
     }
   }
 
-  async function postOnGoogle() {
-    const result = await api.trackGoogleClick({ businessId, serviceIds: selectedServiceIds, selectedReview });
-    setGoogleReviewUrl(result.googleReviewLink);
+  async function triggerHandoff() {
     await copySelectedReview();
-    const opened = window.open(result.googleReviewLink, '_blank', 'noopener,noreferrer');
-    if (!opened) {
-      window.location.href = result.googleReviewLink;
-    }
+    setShowHandoffModal(true);
   }
 
   async function copySelectedReview() {
@@ -455,7 +471,7 @@ function CustomerReviewPage({ businessId }) {
               <button className="secondary-google-button" onClick={copySelectedReview} type="button">
                 Copy review text
               </button>
-              <button className="primary-button" onClick={postOnGoogle} type="button">
+              <button className="primary-button" onClick={triggerHandoff} type="button">
                 <ExternalLink size={18} /> Copy & open Google
               </button>
             </div>
@@ -497,13 +513,87 @@ function CustomerReviewPage({ businessId }) {
           <section className="thank-you">
             <h2>Thank you for the feedback.</h2>
             <p className="subtle">Your message was sent to the business team for follow-up.</p>
-            <button className="public-review-link" onClick={postOnGoogle} aria-label="Write a public review">
+            <button className="public-review-link" onClick={triggerHandoff} aria-label="Write a public review">
               <ExternalLink size={15} />
               <span>Write a public review</span>
             </button>
           </section>
         )}
       </section>
+
+      {showHandoffModal && (
+        <div className="modal-backdrop">
+          <div className="handoff-modal">
+            <div className="modal-header">
+              <h3>✨ Ready to Post! ✨</h3>
+              <p>Your custom review is copied and ready.</p>
+            </div>
+
+            <div className="modal-steps-container">
+              <div className="modal-step-row completed">
+                <div className="step-indicator">✓</div>
+                <div className="step-details">
+                  <strong>Step 1: Text Copied!</strong>
+                  <p>Your review is saved to your phone's clipboard.</p>
+                </div>
+              </div>
+
+              <div className="modal-step-row">
+                <div className="step-indicator">2</div>
+                <div className="step-details">
+                  <strong>Step 2: Tap 5 Stars</strong>
+                  <p>On Google, select the star rating for {business?.name || 'our salon'}.</p>
+                </div>
+              </div>
+
+              <div className="modal-step-row">
+                <div className="step-indicator">3</div>
+                <div className="step-details">
+                  <strong>Step 3: Paste & Post</strong>
+                  <p>Tap and hold the text box, select "Paste", and tap Post.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-review-preview">
+              "{selectedReview}"
+            </div>
+
+            <button
+              type="button"
+              className="primary-button modal-cta-button"
+              onClick={async () => {
+                try {
+                  const result = await api.trackGoogleClick({
+                    businessId,
+                    serviceIds: selectedServiceIds,
+                    selectedReview
+                  });
+                  setGoogleReviewUrl(result.googleReviewLink);
+                  const opened = window.open(result.googleReviewLink, '_blank', 'noopener,noreferrer');
+                  if (!opened) {
+                    window.location.href = result.googleReviewLink;
+                  }
+                } catch (error) {
+                  console.error('Failed to open Google Review:', error);
+                } finally {
+                  setShowHandoffModal(false);
+                }
+              }}
+            >
+              Open Google & Paste
+            </button>
+
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={() => setShowHandoffModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
