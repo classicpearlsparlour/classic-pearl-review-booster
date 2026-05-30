@@ -440,9 +440,9 @@ function CustomerReviewPage({ businessId }) {
           <section className="review-options">
             <PanelTitle icon={<Sparkles />} title="Choose a review" />
             <div className="handoff-strip">
-              <span>1. Pick text</span>
-              <span>2. Copy opens Google</span>
-              <span>3. Paste & post</span>
+              <span>1. Choose Draft</span>
+              <span>2. Copy & Open</span>
+              <span>3. Paste & Post</span>
             </div>
             {options.map((option) => (
               <button
@@ -456,17 +456,6 @@ function CustomerReviewPage({ businessId }) {
                 {option}
               </button>
             ))}
-            <label>
-              Edit before posting
-              <textarea
-                value={selectedReview}
-                onChange={(event) => {
-                  setSelectedReview(event.target.value);
-                  setReviewCopied(false);
-                }}
-                rows={5}
-              />
-            </label>
             <div className="review-actions">
               <button className="secondary-google-button" onClick={copySelectedReview} type="button">
                 Copy review text

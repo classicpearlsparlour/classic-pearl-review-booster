@@ -439,10 +439,39 @@ textarea {
   margin-top: 10px;
 }
 
-.handoff-strip span {
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+.handoff-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
   background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+  margin-bottom: 12px;
+}
+
+.handoff-strip span {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   color: #cbd5e1 !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  text-align: center;
+  line-height: 1.2;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.handoff-strip span:not(:last-child)::after {
+  content: '➔';
+  margin-left: 8px;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.8rem;
 }
 
 .review-option {
@@ -581,10 +610,6 @@ textarea:focus {
   }
 
   .review-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .handoff-strip {
     grid-template-columns: 1fr;
   }
 }
